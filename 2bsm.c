@@ -102,11 +102,15 @@ static int signal2bsm(signal_t *sig, FILE *o, unsigned depth)
 
   if (sig->bit_length > 16) {
     // We need to split it into two, because we assume a <BB> is a 16 bit element (0xXX 0x00)
-    fprintf(o, "									<BB Name=\"%s (LSB)\" Bits=\"0\" Size=\"%d\" />\n", sig->name, 16);
-    fprintf(o, "									<BB Name=\"%s (MSB)\" Bits=\"0\" Size=\"%d\" />\n", sig->name, sig->bit_length - 16);
+    fprintf(o, "									<BE Name=\"%s Flipper\">\n", sig->name);
+    fprintf(o, "										<BB Name=\"%s (LSB)\" Bits=\"0\" Size=\"%d\" />\n", sig->name, 16);
+    fprintf(o, "										<BB Name=\"%s (MSB)\" Bits=\"0\" Size=\"%d\" />\n", sig->name, sig->bit_length - 16);
+    fprintf(o, "									</BE>\n");
   }
   else {
-    fprintf(o, "									<BB Name=\"%s\" Bits=\"0\" Size=\"%d\" />\n", sig->name, sig->bit_length);
+    fprintf(o, "									<BE Name=\"%s Flipper\">\n", sig->name);
+    fprintf(o, "										<BB Name=\"%s\" Bits=\"0\" Size=\"%d\" />\n", sig->name, sig->bit_length);
+    fprintf(o, "									</BE>\n");
   }
 
   return 0;
