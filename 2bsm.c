@@ -100,16 +100,46 @@ static int signal2bsm(signal_t *sig, FILE *o, unsigned depth)
   assert(sig);
   assert(o);
 
+  char szBits[128] = { 0 };
   if (sig->bit_length > 16) {
     // We need to split it into two, because we assume a <BB> is a 16 bit element (0xXX 0x00)
-    fprintf(o, "									<BE Name=\"%s Flipper\">\n", sig->name);
-    fprintf(o, "										<BB Name=\"%s (LSB)\" Bits=\"0\" Size=\"%d\" />\n", sig->name, 16);
-    fprintf(o, "										<BB Name=\"%s (MSB)\" Bits=\"0\" Size=\"%d\" />\n", sig->name, sig->bit_length - 16);
+    fprintf(o, "									<BE Name=\"%s (LSB) Flipper\">\n", sig->name);
+    fprintf(o, "										<BB Name=\"%s (LSB) - Normal\" Bits=\"0\" Size=\"%d\" />\n", sig->name, 16);
+
+    memset(szBits, sizeof(szBits), 0);
+    for (int i = 0; i < 16; i++) {
+      if (strlen(szBits) > 0) {
+        strcat_s(szBits, sizeof(szBits), ",");
+      }
+      strcat_s(szBits, sizeof(szBits), "1");
+    }
+    fprintf(o, "										<BB Name=\"%s (LSB) - Flipped\" Bits=\"%s\" Size=\"%d\" />\n", sig->name, szBits, 16);
+    fprintf(o, "									</BE>\n");
+    fprintf(o, "									<BE Name=\"%s (MSB) Flipper\">\n", sig->name);
+    fprintf(o, "										<BB Name=\"%s (MSB) - Normal\" Bits=\"0\" Size=\"%d\" />\n", sig->name, sig->bit_length - 16);
+
+    memset(szBits, sizeof(szBits), 0);
+    for (int i = 0; i < sig->bit_length - 16; i++) {
+      if (strlen(szBits) > 0) {
+        strcat_s(szBits, sizeof(szBits), ",");
+      }
+      strcat_s(szBits, sizeof(szBits), "1");
+    }
+    fprintf(o, "										<BB Name=\"%s (MSB) - Flipped\" MultiBits=\"%s\" Size=\"%d\" />\n", sig->name, szBits, sig->bit_length - 16);
     fprintf(o, "									</BE>\n");
   }
   else {
+    memset(szBits, sizeof(szBits), 0);
+    for (int i = 0; i < sig->bit_length; i++) {
+      if (strlen(szBits) > 0) {
+        strcat_s(szBits, sizeof(szBits), ",");
+      }
+      strcat_s(szBits, sizeof(szBits), "1");
+    }
+
     fprintf(o, "									<BE Name=\"%s Flipper\">\n", sig->name);
-    fprintf(o, "										<BB Name=\"%s\" Bits=\"0\" Size=\"%d\" />\n", sig->name, sig->bit_length);
+    fprintf(o, "										<BB Name=\"%s - Normal\" Bits=\"0\" Size=\"%d\" />\n", sig->name, sig->bit_length);
+    fprintf(o, "										<BB Name=\"%s - Flipped\" MultiBits=\"%s\" Size=\"%d\" />\n", sig->name, szBits, sig->bit_length);
     fprintf(o, "									</BE>\n");
   }
 
